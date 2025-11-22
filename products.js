@@ -128,7 +128,8 @@ function createProductCard(product, productId) {
     
     card.innerHTML = `
         <div class="product-image">
-            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=Изображение+не+загружено'">
+            <img src="${product.image}" alt="${product.name}" 
+                 onerror="this.src='https://via.placeholder.com/300x200?text=Изображение+не+загружено'">
         </div>
         <div class="product-info">
             <h3 class="product-title">${product.name}</h3>
@@ -191,11 +192,11 @@ if (window.auth) {
     window.auth.onAuthStateChanged((user) => {
         console.log('Auth state changed in products:', user);
         
-        if (user && user.email === 'shilenko.c139@gmail.com') {
-            console.log('Showing add product button');
+        if (user && isAdmin(user)) {
+            console.log('Showing add product button for admin:', user.email);
             if (addProductBtn) addProductBtn.style.display = 'block';
         } else {
-            console.log('Hiding add product button');
+            console.log('Hiding add product button - not admin');
             if (addProductBtn) addProductBtn.style.display = 'none';
         }
     });
@@ -272,10 +273,19 @@ if (addProductForm) {
         }
     });
 }
-
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Products page loaded');
+    
+    // Проверяем права администратора из localStorage
+    const isAdminUser = localStorage.getItem('isAdmin') === 'true';
+    if (isAdminUser && addProductBtn) {
+        console.log('Showing add product button from localStorage');
+        addProductBtn.style.display = 'block';
+    } else {
+        console.log('Hiding add product button - not admin in localStorage');
+        if (addProductBtn) addProductBtn.style.display = 'none';
+    }
     
     // Загружаем товары
     loadProducts();
@@ -293,12 +303,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-// Функция добавления в корзину
-function addToCart(productId, product) {
-    if (window.cartManager) {
-        window.cartManager.addToCart(productId, product);
-    } else {
-        console.log('Adding to cart:', product);
-        alert(`Товар "${product.name}" добавлен в корзину!`);
-    }
-}

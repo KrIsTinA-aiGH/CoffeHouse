@@ -1,4 +1,3 @@
-//auth-utils.js
 if (typeof firebase === 'undefined') {
     console.error('Firebase not loaded');
 } else {
@@ -37,6 +36,8 @@ function updateAuthUI(user) {
     const accountLink = document.getElementById('account-link');
     const footerLoginLink = document.getElementById('footer-login-link');
     const footerAccountLink = document.getElementById('footer-account-link');
+    const adminPanelLink = document.getElementById('admin-panel-link');
+    const footerAdminPanelLink = document.getElementById('footer-admin-panel-link');
 
     if (user) {
         // Пользователь авторизован
@@ -44,11 +45,20 @@ function updateAuthUI(user) {
         if (accountLink) accountLink.style.display = 'block';
         if (footerLoginLink) footerLoginLink.style.display = 'none';
         if (footerAccountLink) footerAccountLink.style.display = 'block';
+        
+        // Показываем панель админа если пользователь админ
+        if (adminPanelLink && isAdmin(user)) {
+            adminPanelLink.style.display = 'block';
+        }
+        if (footerAdminPanelLink && isAdmin(user)) {
+            footerAdminPanelLink.style.display = 'block';
+        }
 
         // Сохраняем в localStorage
         localStorage.setItem('userLoggedIn', 'true');
         localStorage.setItem('userEmail', user.email);
         localStorage.setItem('userName', user.displayName || user.email);
+        localStorage.setItem('isAdmin', isAdmin(user).toString());
 
         console.log('User authenticated:', user.email);
         
@@ -58,11 +68,14 @@ function updateAuthUI(user) {
         if (accountLink) accountLink.style.display = 'none';
         if (footerLoginLink) footerLoginLink.style.display = 'block';
         if (footerAccountLink) footerAccountLink.style.display = 'none';
+        if (adminPanelLink) adminPanelLink.style.display = 'none';
+        if (footerAdminPanelLink) footerAdminPanelLink.style.display = 'none';
 
         // Очищаем localStorage
         localStorage.removeItem('userLoggedIn');
         localStorage.removeItem('userEmail');
         localStorage.removeItem('userName');
+        localStorage.removeItem('isAdmin');
 
         console.log('User not authenticated');
     }
@@ -71,25 +84,35 @@ function updateAuthUI(user) {
 // Функция для немедленного обновления UI из localStorage
 function updateAuthUIFromStorage() {
     const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    const isAdminUser = localStorage.getItem('isAdmin') === 'true';
     
     const loginLink = document.getElementById('login-link');
     const accountLink = document.getElementById('account-link');
     const footerLoginLink = document.getElementById('footer-login-link');
     const footerAccountLink = document.getElementById('footer-account-link');
+    const adminPanelLink = document.getElementById('admin-panel-link');
+    const footerAdminPanelLink = document.getElementById('footer-admin-panel-link');
 
     if (isLoggedIn) {
         if (loginLink) loginLink.style.display = 'none';
         if (accountLink) accountLink.style.display = 'block';
         if (footerLoginLink) footerLoginLink.style.display = 'none';
         if (footerAccountLink) footerAccountLink.style.display = 'block';
+        if (adminPanelLink && isAdminUser) {
+            adminPanelLink.style.display = 'block';
+        }
+        if (footerAdminPanelLink && isAdminUser) {
+            footerAdminPanelLink.style.display = 'block';
+        }
     } else {
         if (loginLink) loginLink.style.display = 'block';
         if (accountLink) accountLink.style.display = 'none';
         if (footerLoginLink) footerLoginLink.style.display = 'block';
         if (footerAccountLink) footerAccountLink.style.display = 'none';
+        if (adminPanelLink) adminPanelLink.style.display = 'none';
+        if (footerAdminPanelLink) footerAdminPanelLink.style.display = 'none';
     }
 }
-
 // Функция выхода
 function logout() {
     if (window.auth) {
@@ -146,4 +169,13 @@ function getErrorMessage(error) {
         default:
             return error.message;
     }
+} // Закрывающая скобка для getErrorMessage
+
+// Функция проверки прав администратора
+function isAdmin(user) {
+    if (!user) return false;
+    
+    // Список email администраторов - замени на свой email
+    const adminEmails = ['admin@mail.ru'];
+    return adminEmails.includes(user.email);
 }

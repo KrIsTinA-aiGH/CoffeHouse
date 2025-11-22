@@ -11,4 +11,10 @@ const firebaseConfig = {
 // Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore(); // Для будущего использования
+const db = firebase.firestore();
+
+// Добавьте это - сделайте auth глобально доступным
+window.auth = auth;
+window.db = db;
+
+console.log('Firebase initialized successfully');
