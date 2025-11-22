@@ -20,34 +20,40 @@ const mimeTypes = {
 const server = http.createServer((req, res) => {
   console.log(`Запрос: ${req.url}`);
   
-  // Убираем параметры запроса
   let filePath = req.url.split('?')[0];
   
-  // Если корневой путь, отдаем index.html
   if (filePath === '/') {
     filePath = '/index.html';
   }
   
-  // Убираем начальный слэш
-  filePath = filePath.substring(1);
+  filePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
   
-  // Если файл не указан, ищем index.html
   if (filePath === '') {
     filePath = 'index.html';
   }
   
   const fullPath = path.join(__dirname, filePath);
-  const ext = path.extname(fullPath);
+  const ext = path.extname(fullPath).toLowerCase();
   const contentType = mimeTypes[ext] || 'text/plain';
 
+  console.log(`Пытаемся открыть: ${fullPath}`);
+  
   fs.readFile(fullPath, (err, content) => {
     if (err) {
-      console.log(`Файл не найден: ${filePath}`);
-      // Пробуем отдать index.html для SPA маршрутов
-      fs.readFile(path.join(__dirname, 'index.html'), (err, content) => {
+      console.log(`Файл не найден: ${filePath}, ошибка: ${err.message}`);
+      
+      const spaPath = path.join(__dirname, 'index.html');
+      fs.readFile(spaPath, (err, content) => {
         if (err) {
-          res.writeHead(404);
-          res.end('File not found');
+          res.writeHead(404, { 'Content-Type': 'text/html' });
+          res.end(`
+            <html>
+              <body>
+                <h1>404 - File not found</h1>
+                <p>Не удалось найти ${filePath} и index.html</p>
+              </body>
+            </html>
+          `);
         } else {
           res.writeHead(200, { 'Content-Type': 'text/html' });
           res.end(content, 'utf-8');
@@ -61,7 +67,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`🚀 Сервер запущен на http://${HOST}:${PORT}`);
-  console.log(`📁 Корневая директория: ${__dirname}`);
-  console.log(`🌐 Откройте браузер: http://localhost:${PORT}`);
+  console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+  console.log(`📦 Docker: http://0.0.0.0:${PORT} (внутренний)`);
 });
