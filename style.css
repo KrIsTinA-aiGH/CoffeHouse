@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 /* Общие стили */
+
 * {
     margin: 0;
     padding: 0;
